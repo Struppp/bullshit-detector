@@ -21,7 +21,7 @@ export default function Home() {
   const [minSeverity, setMinSeverity] = useState<'critical' | 'warning' | 'suggestion'>('suggestion');
   const [visibleTypes, setVisibleTypes] = useState<string[]>(['filler', 'circular', 'weak']);
 
-const scanText = async () => {
+  const scanText = async () => {
     if (!text.trim()) return;
     setLoading(true);
     try {
@@ -39,10 +39,10 @@ const scanText = async () => {
         console.error("API did not return an array:", data);
         alert("The AI returned a weird format. Try scanning again.");
       }
-    } catch (e) { 
-      console.error(e); 
-    } finally { 
-      setLoading(false); 
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,7 +54,7 @@ const scanText = async () => {
     if (!Array.isArray(results)) return [];
 
     const severityMap = { critical: 3, warning: 2, suggestion: 1 };
-    return results.filter(item => 
+    return results.filter(item =>
       severityMap[item.severity] >= severityMap[minSeverity] &&
       visibleTypes.includes(item.type)
     );
@@ -91,7 +91,7 @@ const scanText = async () => {
           >
             {item.snippet}
           </button>
-          
+
           {activeId === index && (
             <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-4 bg-white shadow-2xl rounded-xl border border-slate-200 text-left">
               <div className="flex justify-between items-center mb-1">
@@ -99,7 +99,7 @@ const scanText = async () => {
                 <button onClick={() => setActiveId(null)} className="text-slate-300">✕</button>
               </div>
               <p className="text-sm text-slate-600 mb-3 leading-snug">{item.reason}</p>
-              <button 
+              <button
                 onClick={() => handleReplace(item.snippet, item.replacement)}
                 className="w-full bg-indigo-600 text-white text-xs py-2 rounded-lg font-bold"
               >
@@ -115,52 +115,118 @@ const scanText = async () => {
     return parts;
   }, [text, filteredResults, activeId]);
 
+
+
+
+
+
+
+  {/* HTML */ }
+
+
   return (
-    <main className="min-h-screen bg-slate-50 p-4 md:p-8 text-slate-900 font-work">
-      <div className="mx-auto max-w-6xl">
-        
-        {/* Header Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-          <h1 className="text-2xl font-black text-indigo-600">Bullshit Detector</h1>
-          
-          {isAnalyzed && (
-            <div className="flex flex-wrap gap-4 items-center">
-              {/* Type Filter */}
-              <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                {['filler', 'circular', 'weak'].map(t => (
-                  <button 
-                    key={t} onClick={() => toggleType(t)}
-                    className={`px-3 py-1 text-[10px] font-black uppercase rounded transition-all ${visibleTypes.includes(t) ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}`}
-                  >
-                    {t}
-                  </button>
-                ))}
+    <main
+      className={`bg-slate-50 p-4 md:p-4 text-slate-900 font-work ${isAnalyzed ? 'min-h-screen' : 'h-screen w-full overflow-hidden flex flex-col'
+        }`}
+    >
+
+      <div className={`mx-auto max-w-5xl min-w-[60%] flex flex-col px-10 ${isAnalyzed ? 'h-auto' : 'h-screen'}`}>
+
+        {/* Logo del */}
+        <div className="flex flex-col justify-between items-center mb-4 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div className="md:flex-row justify-between items-center">
+
+
+            <h1 className={`text-[40px] justify-self-start font-black text-indigo-600 ${isAnalyzed ? 'mb-2' : 'mb-0'}`}>Bullshit Detector</h1>
+
+            {isAnalyzed && (
+              <div className="flex flex-wrap gap-4 items-center">
+                {/* Filter */}
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-2xl">
+                  {['filler', 'circular', 'weak'].map(t => (
+                    <button
+                      key={t} onClick={() => toggleType(t)}
+                      className={`px-3 py-1 text-[12px] font-black uppercase rounded-xl transition-all ${visibleTypes.includes(t) ? 'bg-indigo-600 text-slate-50 hover:bg-indigo-800 hover:text-slate-100 shadow-sm' : 'text-slate-400 hover:bg-indigo-200 hover:text-slate-700'}`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                  {/* Viktigthet */}
+                <div className="relative group inline-block text-[14px] font-bold z-50">
+
+                  <div className="relative z-20 bg-slate-100 px-3 py-2 border border-slate-200 cursor-pointer grid grid-cols-1 rounded-lg group-hover:rounded-b-none group-hover:border-b-slate-100 transition-all duration-300 ease-in-out
+                  ">
+
+                    <span className={`col-start-1 row-start-1 ${minSeverity === 'suggestion' ? 'visible' : 'invisible'}`}>All Issues</span>
+                    <span className={`col-start-1 row-start-1 ${minSeverity === 'warning' ? 'visible' : 'invisible'}`}>Hide Polish</span>
+                    <span className={`col-start-1 row-start-1 text-nowrap ${minSeverity === 'critical' ? 'visible' : 'invisible'}`}>Critical Only</span>
+                  </div>
+
+                  <div className="absolute top-full left-0 w-full z-10 bg-slate-100 border border-slate-200 border-t-0 rounded-b-lg shadow-lg max-h-0 opacity-0 -translate-y-2 overflow-hidden group-hover:max-h-37.5 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-in-out">
+
+                    <div className="py-1">
+
+                      {minSeverity !== 'suggestion' && (
+                        <button 
+                          onClick={() => setMinSeverity('suggestion')}
+                          className="block w-full text-left px-3 py-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors"
+                        >
+                          All Issues
+                        </button>
+                      )}
+
+                      {minSeverity !== 'warning' && (
+                        <button 
+                          onClick={() => setMinSeverity('warning')}
+                          className="block w-full text-left px-3 py-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors"
+                        >
+                          Hide Polish
+                        </button>
+                      )}
+
+                      {minSeverity !== 'critical' && (
+                        <button 
+                          onClick={() => setMinSeverity('critical')}
+                          className="block w-full text-left px-3 py-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors"
+                        >
+                          Critical Only
+                        </button>
+                      )}
+
+                    </div>
+                  </div>
+                </div>
+                {/* Lägen */}
+                <button
+                  onClick={() => setIsManualMode(!isManualMode)}
+                  className={`px-4 py-2 rounded-lg text-[14px] font-bold transition-all ${isManualMode ? 'bg-indigo-600 text-white hover:bg-indigo-800 hover:text-slate-100' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-300 hover:text-slate-700'}`}
+                >
+                  {isManualMode ? "Switch to AI Mode" : "Switch to Manual Mode"}
+                </button>
               </div>
-              {/* Severity Switch */}
-              <select 
-                value={minSeverity} 
-                onChange={(e) => setMinSeverity(e.target.value as any)}
-                className="bg-slate-100 text-xs font-bold px-3 py-2 rounded-lg outline-none border-none"
-              >
-                <option value="suggestion">Full Analysis</option>
-                <option value="warning">Hide Minor Polish</option>
-                <option value="critical">Critical Only</option>
-              </select>
-              {/* Mode Toggle */}
-              <button 
-                onClick={() => setIsManualMode(!isManualMode)}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${isManualMode ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700'}`}
-              >
-                {isManualMode ? "Switch to AI Mode" : "Switch to Manual Mode"}
-              </button>
-            </div>
+            )}
+          </div>
+          {!isAnalyzed && (
+            <p className="text-gray-800 text-center px-8">Paste your essay down below and press <span className="font-bold">ANALYZE</span>, this will find issues in your writting. This tool focuses mainly on logical faults, filler words and straight up <span className="font-bold">bullshit</span> but will also recommend fixes to grammar and spelling.</p>
           )}
         </div>
 
+        
+
+
         {!isAnalyzed ? (
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+          <></>
+        ) : (
+          <></>
+        )}
+
+        { /* Textyta */}
+
+        {!isAnalyzed ? (
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 flex-1 mb-4">
             <textarea
-              className="w-full h-[65vh] p-8 text-xl leading-relaxed outline-none resize-none bg-transparent"
+              className="w-full h-[80%] p-8 text-xl leading-relaxed outline-none resize-none bg-transparent"
               placeholder="Paste your essay here..."
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -168,17 +234,16 @@ const scanText = async () => {
             <button
               onClick={scanText}
               disabled={loading || !text}
-              className="w-full bg-indigo-600 py-6 text-white font-black text-xl hover:bg-indigo-700 disabled:bg-slate-200 transition-all"
+              className="w-full h-[20%] bg-indigo-600 py-3 text-white font-black text-xl hover:bg-indigo-700 disabled:bg-slate-200 transition-all"
             >
               {loading ? "SCANNIG FOR BS..." : "ANALYZE & LOCK"}
             </button>
           </div>
         ) : (
           <div className="flex gap-6 items-start">
-            {/* Editor Area */}
-            <div className="flex-1 bg-white rounded-3xl p-10 shadow-lg border border-slate-200 min-h-[75vh]">
+            <div className="flex-1 bg-white rounded-3xl p-10 shadow-lg border border-slate-200 min-h-[75vh] mb-8">
               {isManualMode ? (
-                <textarea 
+                <textarea
                   className="w-full h-[70vh] text-lg leading-[2.2rem] font-serif text-slate-800 bg-transparent outline-none resize-none"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
@@ -188,14 +253,14 @@ const scanText = async () => {
                   {renderedText}
                 </div>
               )}
-              
+
               <div className="mt-12 pt-6 border-t flex justify-between items-center">
                 <button onClick={() => setIsAnalyzed(false)} className="text-slate-400 text-sm font-bold hover:text-indigo-600 transition">← New Scan</button>
-                <button onClick={() => {navigator.clipboard.writeText(text); alert("Clean text copied!")}} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:shadow-indigo-200 hover:shadow-lg transition">Copy Current Text</button>
+                <button onClick={() => { navigator.clipboard.writeText(text); alert("Clean text copied!") }} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:shadow-indigo-200 hover:shadow-lg transition">Copy Current Text</button>
               </div>
             </div>
 
-            {/* Manual Mode Sidebar */}
+            {/* Manuellt Läge */}
             {isManualMode && (
               <div className="w-80 sticky top-8 space-y-4">
                 <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-2">Pending Issues ({filteredResults.length})</h3>
