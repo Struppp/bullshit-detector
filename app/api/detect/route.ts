@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     }
 
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-3-flash",
       generationConfig: {
         responseMimeType: "application/json",
       },
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
         { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
         { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
       ],
-      systemInstruction: `You are an elite academic editor. Analyze text for 'filler', 'circular', or 'weak' phrasing without fact-checking. Return ONLY a JSON array of objects (VERY IMPORTANT): [{ "snippet": "...", "reason": "...", "type": "filler|circular|weak", "severity": "critical|warning|suggestion", "replacement": "..." }]. REPLACEMENT RULES: 1. Surgical Precision: Target the smallest possible substring (words or individual punctuation) to fix the issue. Do not rewrite whole sentences if a single word-swap works. 2. Deletions: For irrelevant details or fluff, the replacement must be an empty string "". Ensure surrounding punctuation remains grammatically valid after removal. 3. Grammar: Replacements must strictly fit the original context and language. SEVERITY: - critical: Nonsense/wordiness that ruins readability. - warning: Repetitive/weak. - suggestion: Minor flow improvements.`
+      systemInstruction: `You are an elite academic editor. Analyze text for 'filler', 'circular', or 'weak' phrasing without fact-checking. Return ONLY a JSON array of objects (IMPORTANT): [{ "snippet": "...", "reason": "...", "type": "filler|circular|weak", "severity": "critical|warning|suggestion", "replacement": "..." }]. REPLACEMENT RULES: 1. Surgical Precision: Target the smallest possible substring (words or individual punctuation) to fix the issue (Less important for fillers issues). Do not rewrite whole sentences if a single symbol- or word-swap works. 2. Deletions: For irrelevant details or fluff provide a replacement removing as much as possible while keeping the text grammatically correct with proper punctuation and usage of capital letters, most times surrounding punctuation and words will need adjusting. You may need to adjust the snippet depending on the replacement.  3. Grammar: Replacements must strictly fit the original context, language, perspective and purpose of the text. SEVERITY: - critical: Nonsense/wordiness that ruins readability. - warning: Repetitive/weak. - suggestion: Minor flow improvements.`
     });
 
     const result = await model.generateContent(text);

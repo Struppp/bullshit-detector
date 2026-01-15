@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 
 interface BullshitItem {
   snippet: string;
@@ -17,9 +17,35 @@ export default function Home() {
   const [isManualMode, setIsManualMode] = useState(false);
   const [activeId, setActiveId] = useState<number | null>(null);
 
-  // Filters
+  // Debuggande
+  const [showDebugModal, setShowDebugModal] = useState(false);
+  const [debugJson, setDebugJson] = useState('');
+  const [debugText, setDebugText] = useState('');
+
+  // Filter
   const [minSeverity, setMinSeverity] = useState<'critical' | 'warning' | 'suggestion'>('suggestion');
   const [visibleTypes, setVisibleTypes] = useState<string[]>(['filler', 'circular', 'weak']);
+
+  // Toasts
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' as 'success' | 'error' });
+  const toastTimeout = useRef<NodeJS.Timeout | null>(null);
+
+
+  const triggerToast = (message: string, type: 'success' | 'error' = 'success') => {
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+
+    setToast({ show: true, message, type });
+
+    toastTimeout.current = setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 3000);
+  };
+
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    triggerToast("Clean text copied to clipboard!", "success");
+  };
 
   const scanText = async () => {
     if (!text.trim()) return;
@@ -37,12 +63,47 @@ export default function Home() {
         setIsAnalyzed(true);
       } else {
         console.error("API did not return an array:", data);
-        alert("The AI returned a weird format. Try scanning again.");
+        triggerToast("AI returned an invalid format. Try again.", "error");
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cleanText = (input: string): string => {
+    let cleaned = input
+      .replace(/[ \t]{2,}/g, ' ')
+
+      .replace(/\s+([.,!?;:])/g, '$1')
+
+      .replace(/,\./g, '.')
+      .replace(/\.,/g, '.')
+
+      .replace(/,,/g, ',')
+      .replace(/(?<!\.)\.\.(?!\.)/g, '.')
+
+      .replace(/\(\s*\)/g, '')
+
+      .trim();
+
+    cleaned = cleaned.replace(/(^|[.!?]\s+)([a-z])/g, (separator, letter) => {
+      return separator + letter.toUpperCase();
+    });
+
+    return cleaned;
+  };
+
+  const handleDebugInject = () => {
+    try {
+      const parsed = JSON.parse(debugJson);
+      setText(debugText);
+      setResults(parsed);
+      setIsAnalyzed(true);
+      setShowDebugModal(false);
+    } catch (e) {
+      triggerToast("Invalid JSON. Must be an array of items.", "error");
     }
   };
 
@@ -61,13 +122,16 @@ export default function Home() {
   }, [results, minSeverity, visibleTypes]);
 
   const handleReplace = (snippet: string, replacement: string) => {
-    setText(prev => prev.replace(snippet, replacement));
+    setText(prev => {
+      const rawText = prev.replace(snippet, replacement);
+      return cleanText(rawText);
+    });
     setResults(prev => prev.filter(r => r.snippet !== snippet));
     setActiveId(null);
   };
 
-  // Interactive Text Rendering
-  const renderedText = useMemo(() => {
+  // Interaktiv Text
+const renderedText = useMemo(() => {
     let parts: any[] = [];
     let lastIndex = 0;
     const sorted = [...filteredResults].sort((a, b) => text.indexOf(a.snippet) - text.indexOf(b.snippet));
@@ -83,28 +147,49 @@ export default function Home() {
         suggestion: 'bg-blue-100 border-blue-300'
       };
 
+      const textColors = {
+        critical: 'text-red-400',
+        warning: 'text-orange-400',
+        suggestion: 'text-blue-400'
+      }
+
       parts.push(
-        <span key={index} className="relative inline-block">
-          <button
-            onClick={() => setActiveId(activeId === index ? null : index)}
-            className={`${colors[item.severity]} border-b-2 cursor-pointer px-0.5 rounded mx-0.5 transition-all hover:brightness-90`}
+        <span 
+          key={index} 
+          className="relative inline-block font-work"
+          // 1. Trigger Open on Hover
+          onMouseEnter={() => setActiveId(index)}
+          // 2. Trigger Close on Leave
+          onMouseLeave={() => setActiveId(null)}
+        >
+          <span
+            className={`${colors[item.severity]} shadow-sm p-1 rounded mx-0.5 transition-all hover:brightness-90 text-left`}
           >
             {item.snippet}
-          </button>
+          </span>
 
           {activeId === index && (
-            <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-4 bg-white shadow-2xl rounded-xl border border-slate-200 text-left">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[10px] font-bold uppercase text-indigo-600">{item.type} • {item.severity}</span>
-                <button onClick={() => setActiveId(null)} className="text-slate-300">✕</button>
+            <div className="bridge absolute z-50 bottom-full left-1/2 -translate-x-1/2 w-72 pb-2">
+              
+              <div className="p-4 bg-white shadow-2xl rounded-xl border border-slate-200 text-left">
+                <div className="flex justify-between items-center">
+                  <span className={`text-[14px] font-black uppercase ${textColors[item.severity]}`}>
+                    {item.type} - {item.severity}
+                  </span>
+                  <button onClick={() => setActiveId(null)} className="text-slate-400 font-black cursor-pointer hover:text-slate-600 transition-colors">✕</button>
+                </div>
+                
+                <p className="text-sm text-slate-600 mb-3 leading-snug">
+                  {item.reason}
+                </p>
+                
+                <button
+                  onClick={() => handleReplace(item.snippet, item.replacement)}
+                  className="w-full bg-indigo-600 text-white text-xs py-2 rounded-lg font-bold hover:bg-indigo-800 hover:text-slate-100 cursor-pointer transition-colors"
+                >
+                  "{item.replacement}"
+                </button>
               </div>
-              <p className="text-sm text-slate-600 mb-3 leading-snug">{item.reason}</p>
-              <button
-                onClick={() => handleReplace(item.snippet, item.replacement)}
-                className="w-full bg-indigo-600 text-white text-xs py-2 rounded-lg font-bold"
-              >
-                Apply Fix: "{item.replacement}"
-              </button>
             </div>
           )}
         </span>
@@ -125,21 +210,75 @@ export default function Home() {
 
 
   return (
-    <main
-      className={`bg-slate-50 p-4 md:p-4 text-slate-900 font-work ${isAnalyzed ? 'min-h-screen' : 'h-screen w-full overflow-hidden flex flex-col'
-        }`}
-    >
+    <main className={`bg-slate-50 p-4 md:p-4 text-slate-900 font-work ${isAnalyzed ? 'min-h-screen' : 'h-screen w-full overflow-hidden flex flex-col'}`}>
+
+
+      {/* Rostat Bröd */}
+
+     <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-200 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${toast.show ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-12 opacity-0 scale-90 pointer-events-none'} ${toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-slate-900 text-white'}`}>
+        <div className={`rounded-full p-1 ${toast.type === 'error' ? 'bg-white/20' : 'bg-green-500'}`}>
+          {toast.type === 'success' ? (
+            <svg className="w-3 h-3 text-slate-900 stroke-current stroke-4" viewBox="0 0 24 24" fill="none">
+              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg className="w-3 h-3 text-white stroke-current stroke-4" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+        
+        <span className="font-bold text-sm tracking-wide">{toast.message}</span>
+      </div>
+
+      {/* DEBUG MODAL */}
+      {showDebugModal && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden border border-slate-200">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+              <h2 className="text-xl font-black text-indigo-600">Developer Debug Tool</h2>
+              <button onClick={() => setShowDebugModal(false)} className="text-slate-400 hover:text-slate-600 text-2xl">✕</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-400 mb-2">Raw Text Input</label>
+                <textarea 
+                  className="w-full h-32 p-3 bg-slate-50 border border-slate-200 rounded-xl font-serif text-sm outline-none focus:ring-2 ring-indigo-500"
+                  placeholder="Paste the essay text here..."
+                  value={debugText}
+                  onChange={(e) => setDebugText(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-400 mb-2">JSON Results Array</label>
+                <textarea 
+                  className="w-full h-48 p-3 bg-slate-900 text-green-400 border border-slate-700 rounded-xl font-mono text-xs outline-none focus:ring-2 ring-indigo-500"
+                  placeholder='[{"snippet": "...", "reason": "...", "type": "filler", "severity": "warning", "replacement": "..."}]'
+                  value={debugJson}
+                  onChange={(e) => setDebugJson(e.target.value)}
+                />
+              </div>
+              <button 
+                onClick={handleDebugInject}
+                className="w-full bg-indigo-600 text-white py-4 rounded-xl font-black hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+              >
+                BYPASS AI & INJECT DATA
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className={`mx-auto max-w-5xl min-w-[60%] flex flex-col px-10 ${isAnalyzed ? 'h-auto' : 'h-screen'}`}>
 
         {/* Logo del */}
         <div className="flex flex-col justify-between items-center mb-4 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <div className="md:flex-row justify-between items-center">
+          <div className={`${isAnalyzed ? '' : 'flex md:flex-row'} justify-between items-center w-full px-8`}>
 
 
-            <h1 className={`text-[40px] justify-self-start font-black text-indigo-600 ${isAnalyzed ? 'mb-2' : 'mb-0'}`}>Bullshit Detector</h1>
+            <h1 className={`text-[40px] font-black text-indigo-600 ${isAnalyzed ? 'mb-2' : '-mb-3'}`}><button onClick={() => setIsAnalyzed(false)} className="cursor-pointer hover:text-indigo-700 trnasition-colors">Bullshit Detector</button></h1>
 
-            {isAnalyzed && (
+            {isAnalyzed ? (
               <div className="flex flex-wrap gap-4 items-center">
                 {/* Filter */}
                 <div className="flex gap-1 bg-slate-100 p-1 rounded-2xl">
@@ -155,8 +294,7 @@ export default function Home() {
                   {/* Viktigthet */}
                 <div className="relative group inline-block text-[14px] font-bold z-50">
 
-                  <div className="relative z-20 bg-slate-100 px-3 py-2 border border-slate-200 cursor-pointer grid grid-cols-1 rounded-lg group-hover:rounded-b-none group-hover:border-b-slate-100 transition-all duration-300 ease-in-out
-                  ">
+                  <div className="relative z-20 bg-slate-100 px-3 py-2 border border-slate-200 cursor-pointer grid grid-cols-1 rounded-lg group-hover:rounded-b-none group-hover:border-b-slate-100 transition-all duration-300 ease-in-out">
 
                     <span className={`col-start-1 row-start-1 ${minSeverity === 'suggestion' ? 'visible' : 'invisible'}`}>All Issues</span>
                     <span className={`col-start-1 row-start-1 ${minSeverity === 'warning' ? 'visible' : 'invisible'}`}>Hide Polish</span>
@@ -168,12 +306,7 @@ export default function Home() {
                     <div className="py-1">
 
                       {minSeverity !== 'suggestion' && (
-                        <button 
-                          onClick={() => setMinSeverity('suggestion')}
-                          className="block w-full text-left px-3 py-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors"
-                        >
-                          All Issues
-                        </button>
+                        <button onClick={() => setMinSeverity('suggestion')} className="block w-full text-left px-3 py-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors"> All Issues </button>
                       )}
 
                       {minSeverity !== 'warning' && (
@@ -205,10 +338,12 @@ export default function Home() {
                   {isManualMode ? "Switch to AI Mode" : "Switch to Manual Mode"}
                 </button>
               </div>
+            ) : (
+              <button onClick={() => setShowDebugModal(true)} className="bg-slate-100 rounded-xl shadow-sm border border-slate-200 hover:bg-slate-300"><svg fill="#4f39f6" height="48px" width="48px" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.00 16.00"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path className="cls-1" d="M12.28592,11.7143,6.49472,5.92372a2.50375,2.50375,0,0,0,.16958-.7544,2.14905,2.14905,0,0,0-.09474-.81438,2.11972,2.11972,0,0,0-.54871-.90431,2.32771,2.32771,0,0,0-1.76079-.68447H4.21515a2.104,2.104,0,0,0-.71829.15488L4.59925,4.02518l.31921.31976.24445.24481a1.864,1.864,0,0,1-.21948.85435,1.04314,1.04314,0,0,1-.11475.14488,1.64822,1.64822,0,0,1-1.00259.33474L2.609,4.70468,2.16005,4.255a2.07386,2.07386,0,0,0-.13469.54457l-.015.10493a2.33671,2.33671,0,0,0,.38407,1.51882,2.50928,2.50928,0,0,0,.29431.35975A2.20549,2.20549,0,0,0,4.265,7.43257a2.45325,2.45325,0,0,0,.89789-.17485L9.95648,12.054l1.20212,1.19909H11.827l.66343-.6645v-.6695Zm-6.53561-2.806,1.3662,1.3662L4.12892,13.2621H3.20558l-.45037-.45038V11.8959ZM14,5.90569,12.19094,7.71475,10.89232,6.49869,9.5111,7.87992,8.1449,6.51372,9.51861,5.13249,7.89717,3.5111l.68312-.7732,2.252.45042Z"></path> </g></svg></button>
             )}
           </div>
           {!isAnalyzed && (
-            <p className="text-gray-800 text-center px-8">Paste your essay down below and press <span className="font-bold">ANALYZE</span>, this will find issues in your writting. This tool focuses mainly on logical faults, filler words and straight up <span className="font-bold">bullshit</span> but will also recommend fixes to grammar and spelling.</p>
+            <p className="text-gray-800 px-8">Paste your essay down below and press <span className="font-bold">ANALYZE</span>, this will find issues in your writting. This tool focuses mainly on logical faults, filler words and straight up <span className="font-bold">bullshit</span> but will also recommend fixes to grammar and spelling.</p>
           )}
         </div>
 
@@ -229,6 +364,7 @@ export default function Home() {
               className="w-full h-[80%] p-8 text-xl leading-relaxed outline-none resize-none bg-transparent"
               placeholder="Paste your essay here..."
               value={text}
+              maxLength={5000}
               onChange={(e) => setText(e.target.value)}
             />
             <button
@@ -244,19 +380,19 @@ export default function Home() {
             <div className="flex-1 bg-white rounded-3xl p-10 shadow-lg border border-slate-200 min-h-[75vh] mb-8">
               {isManualMode ? (
                 <textarea
-                  className="w-full h-[70vh] text-lg leading-[2.2rem] font-serif text-slate-800 bg-transparent outline-none resize-none"
+                  className="w-full h-[70vh] text-lg leading-[2.2rem] font-work text-slate-800 bg-transparent outline-none resize-none"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                 />
               ) : (
-                <div className="text-lg leading-[2.2rem] whitespace-pre-wrap font-serif text-slate-800">
+                <div className="text-lg leading-[2.2rem] whitespace-pre-wrap font-work text-slate-800">
                   {renderedText}
                 </div>
               )}
 
               <div className="mt-12 pt-6 border-t flex justify-between items-center">
-                <button onClick={() => setIsAnalyzed(false)} className="text-slate-400 text-sm font-bold hover:text-indigo-600 transition">← New Scan</button>
-                <button onClick={() => { navigator.clipboard.writeText(text); alert("Clean text copied!") }} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:shadow-indigo-200 hover:shadow-lg transition">Copy Current Text</button>
+                <button onClick={() => setIsAnalyzed(false)} className="text-slate-400 text-sm font-bold hover:text-indigo-600 transition-colors cursor-pointer">← New Scan</button>
+                <button onClick={handleCopy} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:shadow-indigo-200 hover:shadow-lg hover:bg-indigo-700 transition-all cursor-pointer">Copy Current Text</button>
               </div>
             </div>
 
