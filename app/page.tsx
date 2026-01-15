@@ -44,7 +44,7 @@ export default function Home() {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(text);
-    triggerToast("Clean text copied to clipboard!", "success");
+    triggerToast("Text copied to clipboard!", "success");
   };
 
   const scanText = async () => {
@@ -215,10 +215,10 @@ const renderedText = useMemo(() => {
 
       {/* Rostat Bröd */}
 
-     <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-200 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${toast.show ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-12 opacity-0 scale-90 pointer-events-none'} ${toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-slate-900 text-white'}`}>
+     <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-200 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${toast.show ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-12 opacity-0 scale-90 pointer-events-none border border-t-slate-100 border-slate-200 border-b-slate-300'} ${toast.type === 'error' ? 'bg-red-400 text-white' : 'bg-white text-slate-900'}`}>
         <div className={`rounded-full p-1 ${toast.type === 'error' ? 'bg-white/20' : 'bg-green-500'}`}>
           {toast.type === 'success' ? (
-            <svg className="w-3 h-3 text-slate-900 stroke-current stroke-4" viewBox="0 0 24 24" fill="none">
+            <svg className="w-3 h-3 text-white stroke-current stroke-4" viewBox="0 0 24 24" fill="none">
               <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           ) : (
@@ -339,7 +339,7 @@ const renderedText = useMemo(() => {
                 </button>
               </div>
             ) : (
-              <button onClick={() => setShowDebugModal(true)} className="bg-slate-100 rounded-xl shadow-sm border border-slate-200 hover:bg-slate-300"><svg fill="#4f39f6" height="48px" width="48px" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.00 16.00"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path className="cls-1" d="M12.28592,11.7143,6.49472,5.92372a2.50375,2.50375,0,0,0,.16958-.7544,2.14905,2.14905,0,0,0-.09474-.81438,2.11972,2.11972,0,0,0-.54871-.90431,2.32771,2.32771,0,0,0-1.76079-.68447H4.21515a2.104,2.104,0,0,0-.71829.15488L4.59925,4.02518l.31921.31976.24445.24481a1.864,1.864,0,0,1-.21948.85435,1.04314,1.04314,0,0,1-.11475.14488,1.64822,1.64822,0,0,1-1.00259.33474L2.609,4.70468,2.16005,4.255a2.07386,2.07386,0,0,0-.13469.54457l-.015.10493a2.33671,2.33671,0,0,0,.38407,1.51882,2.50928,2.50928,0,0,0,.29431.35975A2.20549,2.20549,0,0,0,4.265,7.43257a2.45325,2.45325,0,0,0,.89789-.17485L9.95648,12.054l1.20212,1.19909H11.827l.66343-.6645v-.6695Zm-6.53561-2.806,1.3662,1.3662L4.12892,13.2621H3.20558l-.45037-.45038V11.8959ZM14,5.90569,12.19094,7.71475,10.89232,6.49869,9.5111,7.87992,8.1449,6.51372,9.51861,5.13249,7.89717,3.5111l.68312-.7732,2.252.45042Z"></path> </g></svg></button>
+              <button onClick={() => setShowDebugModal(true)} className="bg-slate-100 rounded-xl shadow-sm border border-slate-200 hover:bg-slate-300"><svg fill="#4f39f6" height="48px" width="48px" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.00 16.00"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"> <path className="cls-1" d="M12.28592,11.7143,6.49472,5.92372a2.50375,2.50375,0,0,0,.16958-.7544,2.14905,2.14905,0,0,0-.09474-.81438,2.11972,2.11972,0,0,0-.54871-.90431,2.32771,2.32771,0,0,0-1.76079-.68447H4.21515a2.104,2.104,0,0,0-.71829.15488L4.59925,4.02518l.31921.31976.24445.24481a1.864,1.864,0,0,1-.21948.85435,1.04314,1.04314,0,0,1-.11475.14488,1.64822,1.64822,0,0,1-1.00259.33474L2.609,4.70468,2.16005,4.255a2.07386,2.07386,0,0,0-.13469.54457l-.015.10493a2.33671,2.33671,0,0,0,.38407,1.51882,2.50928,2.50928,0,0,0,.29431.35975A2.20549,2.20549,0,0,0,4.265,7.43257a2.45325,2.45325,0,0,0,.89789-.17485L9.95648,12.054l1.20212,1.19909H11.827l.66343-.6645v-.6695Zm-6.53561-2.806,1.3662,1.3662L4.12892,13.2621H3.20558l-.45037-.45038V11.8959ZM14,5.90569,12.19094,7.71475,10.89232,6.49869,9.5111,7.87992,8.1449,6.51372,9.51861,5.13249,7.89717,3.5111l.68312-.7732,2.252.45042Z"></path> </g></svg></button>
             )}
           </div>
           {!isAnalyzed && (
