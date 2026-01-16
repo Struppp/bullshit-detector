@@ -16,7 +16,6 @@ export async function POST(req: Request) {
       generationConfig: {
         responseMimeType: "application/json",
       },
-      // This helps prevent Gemini from blocking your request for "sensitive" topics
       safetySettings: [
         { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
         { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },

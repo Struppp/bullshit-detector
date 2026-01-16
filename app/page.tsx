@@ -67,6 +67,7 @@ export default function Home() {
       }
     } catch (e) {
       console.error(e);
+      triggerToast("Connection failed.", "error");
     } finally {
       setLoading(false);
     }
@@ -75,17 +76,12 @@ export default function Home() {
   const cleanText = (input: string): string => {
     let cleaned = input
       .replace(/[ \t]{2,}/g, ' ')
-
       .replace(/\s+([.,!?;:])/g, '$1')
-
       .replace(/,\./g, '.')
       .replace(/\.,/g, '.')
-
       .replace(/,,/g, ',')
       .replace(/(?<!\.)\.\.(?!\.)/g, '.')
-
       .replace(/\(\s*\)/g, '')
-
       .trim();
 
     cleaned = cleaned.replace(/(^|[.!?]\s+)([a-z])/g, (separator, letter) => {
@@ -131,7 +127,7 @@ export default function Home() {
   };
 
   // Interaktiv Text
-const renderedText = useMemo(() => {
+  const renderedText = useMemo(() => {
     let parts: any[] = [];
     let lastIndex = 0;
     const sorted = [...filteredResults].sort((a, b) => text.indexOf(a.snippet) - text.indexOf(b.snippet));
@@ -157,9 +153,7 @@ const renderedText = useMemo(() => {
         <span 
           key={index} 
           className="relative inline-block font-work"
-          // 1. Trigger Open on Hover
           onMouseEnter={() => setActiveId(index)}
-          // 2. Trigger Close on Leave
           onMouseLeave={() => setActiveId(null)}
         >
           <span
@@ -170,7 +164,6 @@ const renderedText = useMemo(() => {
 
           {activeId === index && (
             <div className="bridge absolute z-50 bottom-full left-1/2 -translate-x-1/2 w-72 pb-2">
-              
               <div className="p-4 bg-white shadow-2xl rounded-xl border border-slate-200 text-left">
                 <div className="flex justify-between items-center">
                   <span className={`text-[14px] font-black uppercase ${textColors[item.severity]}`}>
@@ -201,20 +194,27 @@ const renderedText = useMemo(() => {
   }, [text, filteredResults, activeId]);
 
 
-
-
-
-
-
-  {/* HTML */ }
-
-
   return (
     <main className={`bg-slate-50 p-4 md:p-4 text-slate-900 font-work ${isAnalyzed ? 'min-h-screen' : 'h-screen w-full overflow-hidden flex flex-col'}`}>
 
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="fixed inset-0 z-300 bg-white/80 backdrop-blur-md flex flex-col items-center justify-center transition-all duration-300">
+           <div className="relative w-24 h-24 mb-6">
+              <div className="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              </div>
+           </div>
+           
+           <h2 className="text-2xl font-black text-slate-800 animate-pulse tracking-tight">DETECTING BULLSHIT...</h2>
+           <p className="text-slate-500 font-medium mt-2">Consulting the oracle of truth</p>
+        </div>
+      )}
 
-      {/* Rostat Bröd */}
 
+      {/* Rostat Bröd (Toast) */}
      <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-200 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${toast.show ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-12 opacity-0 scale-90 pointer-events-none border border-t-slate-100 border-slate-200 border-b-slate-300'} ${toast.type === 'error' ? 'bg-red-400 text-white' : 'bg-white text-slate-900'}`}>
         <div className={`rounded-full p-1 ${toast.type === 'error' ? 'bg-white/20' : 'bg-green-500'}`}>
           {toast.type === 'success' ? (
@@ -285,7 +285,7 @@ const renderedText = useMemo(() => {
                   {['filler', 'circular', 'weak'].map(t => (
                     <button
                       key={t} onClick={() => toggleType(t)}
-                      className={`px-3 py-1 text-[12px] font-black uppercase rounded-xl transition-all ${visibleTypes.includes(t) ? 'bg-indigo-600 text-slate-50 hover:bg-indigo-800 hover:text-slate-100 shadow-sm' : 'text-slate-400 hover:bg-indigo-200 hover:text-slate-700'}`}
+                      className={`px-3 py-1 text-[12px] cursor-pointer font-black uppercase rounded-xl transition-all ${visibleTypes.includes(t) ? 'bg-indigo-600 text-slate-50 hover:bg-indigo-800 hover:text-slate-100 shadow-sm' : 'text-slate-400 hover:bg-indigo-200 hover:text-slate-700'}`}
                     >
                       {t}
                     </button>
@@ -306,13 +306,13 @@ const renderedText = useMemo(() => {
                     <div className="py-1">
 
                       {minSeverity !== 'suggestion' && (
-                        <button onClick={() => setMinSeverity('suggestion')} className="block w-full text-left px-3 py-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors"> All Issues </button>
+                        <button onClick={() => setMinSeverity('suggestion')} className="block w-full text-left px-3 py-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors cursor-pointer"> All Issues </button>
                       )}
 
                       {minSeverity !== 'warning' && (
                         <button 
                           onClick={() => setMinSeverity('warning')}
-                          className="block w-full text-left px-3 py-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors"
+                          className="block w-full text-left px-3 py-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors cursor-pointer"
                         >
                           Hide Polish
                         </button>
@@ -321,7 +321,7 @@ const renderedText = useMemo(() => {
                       {minSeverity !== 'critical' && (
                         <button 
                           onClick={() => setMinSeverity('critical')}
-                          className="block w-full text-left px-3 py-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors"
+                          className="block w-full text-left px-3 py-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition-colors cursor-pointer"
                         >
                           Critical Only
                         </button>
@@ -333,7 +333,7 @@ const renderedText = useMemo(() => {
                 {/* Lägen */}
                 <button
                   onClick={() => setIsManualMode(!isManualMode)}
-                  className={`px-4 py-2 rounded-lg text-[14px] font-bold transition-all ${isManualMode ? 'bg-indigo-600 text-white hover:bg-indigo-800 hover:text-slate-100' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-300 hover:text-slate-700'}`}
+                  className={`px-4 py-2 rounded-lg text-[14px] font-bold transition-all cursor-pointer ${isManualMode ? 'bg-indigo-600 text-white hover:bg-indigo-800 hover:text-slate-100' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-300 hover:text-slate-700'}`}
                 >
                   {isManualMode ? "Switch to AI Mode" : "Switch to Manual Mode"}
                 </button>
@@ -351,14 +351,6 @@ const renderedText = useMemo(() => {
 
 
         {!isAnalyzed ? (
-          <></>
-        ) : (
-          <></>
-        )}
-
-        { /* Textyta */}
-
-        {!isAnalyzed ? (
           <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 flex-1 mb-4">
             <textarea
               className="w-full h-[80%] p-8 text-xl leading-relaxed outline-none resize-none bg-transparent"
@@ -372,7 +364,7 @@ const renderedText = useMemo(() => {
               disabled={loading || !text}
               className="w-full h-[20%] bg-indigo-600 py-3 text-white font-black text-xl hover:bg-indigo-700 disabled:bg-slate-200 transition-all"
             >
-              {loading ? "SCANNIG FOR BS..." : "ANALYZE & LOCK"}
+              ANALYZE & LOCK
             </button>
           </div>
         ) : (
