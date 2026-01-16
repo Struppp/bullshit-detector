@@ -6,24 +6,14 @@ Namn på alla deltagare: Erik Eisler
 
 ## Projekt & Teknisk- beskrivning
 
-Här skriver ni vad ni har gjort, försök att formulera det så att det blir relevant för kategorin ni tänker att ni tävlar i.
-T.ex. om ni har fokuserat på just UI/UX så är det mer relevant än om ni 
-
-Det ska även ingå en teknisk beskrivning, där ni beskriver en eller flera tekniska lösningar i projektet. Ni skall beskriva funktionen av den tekniska lösningen och hur den används i projektet. Ju tydligare beskrivning desto enklare att bedöma den tekniska lösningen. Beskrivningen skall vara förståelig även för personer som inte kan programmera.
-
 Jag har skapat en webbsida med react.js där man kan ladda upp sin text och sedan kommer AI att analysera den för att föreslå förbättringar, den fokuserar mestadels på “Bullshit” alltså svaga eller ologiska argument, onödiga ord och repetitiv argumentation men kommer även att föreslå lösningar på grammatiska fel. Man kan se vad som anses dåligt i texten och sedan kan man se AI:s förslag och välja vad man vill och inte vill implementera. Fördelen med detta i jämförelse med att bara be AI att skriva om din text är att du kan välja vad som faktiskt ändras och vara med i processen, inte bara blir slutprodukten bättre, du lär också dig vad du gör fel och nya ord eller formuleringar. Den är väldigt användbar för att lära sig om man har några dåliga skrivvanor.
-
 
 
 ### Externt producerade komponenter
 
-Här presenterar ni saker som ni har laddat ner och använt för att bygga ert arbete. Beskriv också i vilken utsträckning de behövs för projektet.
-
 Projektet är byggt i React och använder Next.js, Tailwind och Gemini.
 
 ### Install
-
-Här skriver ni vad vi i juryn behöver göra för att kunna köra ert program / app / webbsida
 
 Här är det lite jobbigt, projektet är skapat i React alltså måste den köras på localhost, jag använde Visual Studio Code där man kan ladda in koden och sedan köra “npm run dev” i terminalen så kommer man starta den på localhost. Problemet som dock uppstår är att den använder en API kod så antingen måste du skaffa en egen, går att göra gratis från google AI studio och sedan skapa en  “.env.local” i root och skriva in “GOOGLE_API_KEY=nyckel_här”.
 
