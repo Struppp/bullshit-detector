@@ -15,7 +15,7 @@ Projektet är byggt i React och använder Next.js, Tailwind och Gemini.
 
 ### Install
 
-Här är det lite jobbigt, projektet är skapat i React alltså måste den köras på localhost, jag använde Visual Studio Code där man kan ladda in koden och sedan köra “npm run dev” i terminalen så kommer man starta den på localhost. Problemet som dock uppstår är att den använder en API kod så antingen måste du skaffa en egen, går att göra gratis från google AI studio och sedan skapa en  “.env.local” i root och skriva in “GOOGLE_API_KEY=nyckel_här”.
+Här är det lite jobbigt, projektet är skapat i React alltså måste den köras på localhost, jag använde Visual Studio Code där man kan ladda in koden och sedan köra “npm run dev” i terminalen så kommer man starta den på localhost. Problemet som dock uppstår är att den använder en AI och behöver en API nyckel så antingen måste du skaffa en egen, går att göra gratis från google AI studio och sedan skapa en  “.env.local” i root och skriva in “GOOGLE_API_KEY=nyckel_här”.
 
 SIMPLARE OTEKNISK METOD: du kan använda mitt exempel där AI redan använts, då kör du programmet och sedan trycker på knappen uppe till höger och kopierar in följande text och json kod i rätt rutor, då kan du skippa AI delen och testa programmets funktion, däremot kommer du missa min fina loading overlay :(
 
